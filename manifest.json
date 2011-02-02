@@ -1,0 +1,17 @@
+{
+    "name": "MouseHunt Alerter",
+    "version": "0.0.1",
+    "description": "__MSG_description__",
+    "default_locale": "en",
+    "page_action": {
+        "default_icon": "icons/text-html-16.png",
+        "default_title": "MouseHunt Alerter",
+        "default_popup": "views/popup.html"
+    },
+    "background_page": "views/background.html",
+    "permissions": [
+        "notifications",
+        "http://www.mousehuntgame.com/*",
+        "http://apps.facebook.com/mousehunt/*"
+    ]
+}

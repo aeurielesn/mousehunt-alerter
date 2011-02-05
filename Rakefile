@@ -42,6 +42,7 @@ module Constants
   IGNORE_DIR = /\.git|dist/
   IGNORE_FILE = /Rakefile|\.gitignore|.*\.crx$|.*\.zip|\.project$|^(?:.*[^n]|.*[^i]n|.*[^m]in|.*[^.]min)\.js$/
   KEY_ALGO = key_algo
+  BUILD_DIR = "build"
 end
 
 # from crxmake
@@ -61,7 +62,7 @@ def get_filename(extension, ext)
 end
 
 @crxmake_hash = {
-  :ex_dir => ".",
+  :ex_dir => Constants::BUILD_DIR,
   :pkey => Constants::KEY_FILE,
   :verbose => false,
   :ignorefile => Constants::IGNORE_FILE,
@@ -77,21 +78,36 @@ def make_crx(key_file)
   CrxMake.make(crxmake_hash)
 end
 
-task :default => [:clean,:jsmin,:'pack:default']
+task :default => [:clean,:cp,:jsmin,:'pack:default']
+
+task :clean do
+  Dir["#{Constants::BUILD_DIR}/*"].each do |f|
+    FileUtils.rm_r(f)
+  end
+end
+
+task :cp do
+  FileUtils.cp_r("_locales", "#{Constants::BUILD_DIR}")
+  FileUtils.cp_r("icons", "#{Constants::BUILD_DIR}")
+  FileUtils.cp("manifest.json", "#{Constants::BUILD_DIR}")
+end
 
 task :jsmin do
+  # minify javascripts
+  FileUtils.mkdir("#{Constants::BUILD_DIR}/js")
   Dir['js/*.js'].each do |input|
     File.open(input, 'r') do |i|
-      File.open("#{input[0...-3]}.min.js", 'w') do |o|
+      File.open("#{Constants::BUILD_DIR}/#{input[0...-3]}.min.js", 'w') do |o|
         o << JSMin.minify(i)
       end
     end
   end
-end
-
-task :clean do
-  Dir["js/*.min.js"].each do |f|
-    File.delete(f)
+  # use minified versions in html's
+  FileUtils.mkdir("#{Constants::BUILD_DIR}/views")
+  Dir['views/*.html'].each do |input|
+    File.open("#{Constants::BUILD_DIR}/#{input}", 'w') do |o|
+      o.puts File.read(input).gsub(/\.js/, '.min.js')
+    end
   end
 end
 
@@ -108,7 +124,7 @@ namespace :pack do
 end
 
 desc 'generate zip file for extension gallery'
-task :zip => [:clean,:jsmin] do
+task :zip => [:clean,:cp,:jsmin] do
   key = read_key Constants::KEY_FILE 
   extension = ExtensionInfo.new(Constants::KEY_ALGO + key.public_key.to_der, ".")
   crxmake_hash = @crxmake_hash.dup

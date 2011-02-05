@@ -80,8 +80,8 @@ MouseHuntAlerter.getUserObject = function(response) {
 */
 MouseHuntAlerter.checkNextActiveTurn = function() {
     var xhr = new XMLHttpRequest();
-    var url = "http://apps.facebook.com/mousehunt/index.php";
-    //var url = "http://www.mousehuntgame.com/index.php";
+    //var url = "http://apps.facebook.com/mousehunt/index.php";
+    var url = "http://www.mousehuntgame.com/index.php";
     xhr.onreadystatechange = function() {
         var delay = DEFAULT_RETRY_MILLISECONDS;
         if(xhr.readyState !== 4) {

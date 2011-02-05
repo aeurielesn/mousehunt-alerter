@@ -1,8 +1,12 @@
+#--
 # Rakefile forked from https://github.com/cezarsa/chromed_bird/blob/master/Rakefile
+#++
+
 require 'crxmake'
 require 'openssl'
 require 'digest/sha2'
 require 'json'
+require 'jsmin'
 
 class ExtensionInfo
   attr_reader :id, :name, :version
@@ -35,8 +39,8 @@ end
 
 module Constants
   KEY_FILE = "../mousehunt-alerter.pem"
-  IGNORE_DIR = /\.git/
-  IGNORE_FILE = /Rakefile|\.gitignore|.*\.crx$|.*\.zip|\.project$/
+  IGNORE_DIR = /\.git|dist/
+  IGNORE_FILE = /Rakefile|\.gitignore|.*\.crx$|.*\.zip|\.project$|^(?:.*[^n]|.*[^i]n|.*[^m]in|.*[^.]min)\.js$/
   KEY_ALGO = key_algo
 end
 
@@ -53,7 +57,7 @@ def current_branch
 end
 
 def get_filename(extension, ext)
-  File.expand_path("./mousehunt_alerter_#{extension.id}_#{extension.version}_#{current_branch}.#{ext}")
+  File.expand_path("./dist/mousehunt_alerter_#{extension.id}_#{extension.version}_#{current_branch}.#{ext}")
 end
 
 @crxmake_hash = {
@@ -73,7 +77,23 @@ def make_crx(key_file)
   CrxMake.make(crxmake_hash)
 end
 
-task :default => :'pack:default'
+task :default => [:clean,:jsmin,:'pack:default']
+
+task :jsmin do
+  Dir['js/*.js'].each do |input|
+    File.open(input, 'r') do |i|
+      File.open("#{input[0...-3]}.min.js", 'w') do |o|
+        o << JSMin.minify(i)
+      end
+    end
+  end
+end
+
+task :clean do
+  Dir["js/*.min.js"].each do |f|
+    File.delete(f)
+  end
+end
 
 namespace :pack do
   desc 'pack extension using main key'
@@ -88,7 +108,7 @@ namespace :pack do
 end
 
 desc 'generate zip file for extension gallery'
-task :zip do
+task :zip => [:clean,:jsmin] do
   key = read_key Constants::KEY_FILE 
   extension = ExtensionInfo.new(Constants::KEY_ALGO + key.public_key.to_der, ".")
   crxmake_hash = @crxmake_hash.dup

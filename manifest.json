@@ -1,17 +1,18 @@
 {
     "name": "MouseHunt Alerter",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "__MSG_description__",
     "default_locale": "en",
     "page_action": {
-        "default_icon": "icons/text-html-16.png",
-        "default_title": "MouseHunt Alerter",
-        "default_popup": "views/popup.html"
+        "default_icon": "icons/mouse-and-cheese-48.png",
+        "default_title": "MouseHunt Alerter"
+    },
+    "icons": {
+        "128": "icons/mouse-and-cheese-128.png"
     },
     "background_page": "views/background.html",
     "permissions": [
         "notifications",
-        "http://www.mousehuntgame.com/*",
-        "http://apps.facebook.com/mousehunt/*"
+        "http://www.mousehuntgame.com/*"
     ]
 }

@@ -1,5 +1,24 @@
 {
     "description": {
         "message": "MouseHunt Alerter."
+    },
+    "notification_title": {
+        "message": "It's hunt time!"
+    },
+    "sound_hunter_horn": {
+        "message": "You can sound the Hunter's Horn now."
+    },
+    "notification_error_title": {
+        "message": "DON'T PANIC!"
+    },
+    "unexpected_error": {
+        "message": "An unexpected error has ocurred."
+    },
+    "network_error": {
+        "message": "The MouseHunt webpage could not be loaded."
+    },
+    "wrong_page_error": {
+        "message": "The MouseHunt page could not be recognized."
     }
 }
+

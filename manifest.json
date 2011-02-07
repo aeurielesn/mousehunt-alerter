@@ -1,6 +1,6 @@
 {
     "name": "MouseHunt Alerter",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "__MSG_description__",
     "default_locale": "en",
     "page_action": {
@@ -8,6 +8,7 @@
         "default_title": "MouseHunt Alerter"
     },
     "icons": {
+        "48": "icons/mouse-and-cheese-48.png",
         "128": "icons/mouse-and-cheese-128.png"
     },
     "background_page": "views/background.html",

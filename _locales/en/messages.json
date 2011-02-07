@@ -2,6 +2,9 @@
     "description": {
         "message": "MouseHunt Alerter."
     },
+    "must_log_in": {
+        "message": "You need to be logged in."
+    },
     "notification_title": {
         "message": "It's hunt time!"
     },
@@ -19,6 +22,12 @@
     },
     "wrong_page_error": {
         "message": "The MouseHunt page could not be recognized."
+    },
+    "kings_reward": {
+        "message": "The King has a reward for you."
+    },
+    "out_of_bait": {
+        "message": "You are out of bait, go and arm some cheese and sound the Hunter's Horn."
     }
 }
 

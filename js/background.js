@@ -8,12 +8,16 @@ MouseHuntAlerter = {};
 */
 var NETWORK_ERROR = 0;
 var WRONG_PAGE_ERROR = 1;
+var MUST_LOG_IN = 2;
+var OUT_OF_BAIT = 3;
 var UNEXPECTED_ERROR = 255;
 
 /**
 * Constants.
 */
 var DEFAULT_RETRY_MILLISECONDS = 120000;
+var NOTIFICATION_DEFAULT_DELAY = 10000;
+var NOTIFICATION_MANUAL_CLOSE = -1;
 
 /**
 * Shows a notification.
@@ -24,9 +28,6 @@ MouseHuntAlerter.showNotification = function(msg) {
         chrome.i18n.getMessage('notification_title'),
         chrome.i18n.getMessage(msg)
     );
-//	notification.ondisplay = function() {
-//		setTimeout(function() { notification.cancel(); }, 15000);
-//	}
     notification.show();
 };
 
@@ -35,27 +36,38 @@ MouseHuntAlerter.showNotification = function(msg) {
 */
 MouseHuntAlerter.showError = function(status) {
     var icon = '/icons/dialog-error-48.png';
-    var message = chrome.i18n.getMessage('unexpected_error');
+    var message = 'unexpected_error';
+    var delay = NOTIFICATION_DEFAULT_DELAY;
 
     switch(status)
     {
     case NETWORK_ERROR:
         icon = '/icons/network-error-48.png';
-        message = chrome.i18n.getMessage('network_error');
+        message = 'network_error';
         break;
     case WRONG_PAGE_ERROR:
-        message = chrome.i18n.getMessage('wrong_page_error');
+        message = 'wrong_page_error';
+        break;
+    case MUST_LOG_IN:
+        message = 'must_log_in';
+        delay = NOTIFICATION_MANUAL_CLOSE;
+        break;
+    case OUT_OF_BAIT:
+        message = 'out_of_bait';
+        delay = NOTIFICATION_MANUAL_CLOSE;
         break;
     }
 
     var notification = webkitNotifications.createNotification(
         icon,
         chrome.i18n.getMessage('notification_error_title'),
-        message
+        chrome.i18n.getMessage(message)
     );
-    notification.ondisplay = function() {
-        setTimeout(function() { notification.cancel(); }, 15000);
-    };
+    if(delay !== NOTIFICATION_MANUAL_CLOSE) {
+        notification.ondisplay = function() {
+            setTimeout(function() { notification.cancel(); }, delay);
+        };
+    }
     notification.show();
 };
 
@@ -69,7 +81,7 @@ MouseHuntAlerter.getUserObject = function(response) {
         start += "user =".length;
         user = json_parse(response.substr(start));
     } else {
-        // What to do in case of not find an user object?
+        user = { "is_online": false };
     }
     return user;
 };
@@ -89,11 +101,23 @@ MouseHuntAlerter.checkNextActiveTurn = function() {
         } else if(xhr.status === 200) {
             if(xhr.responseText.match(/appname = 'MouseHunt'/)) {
                 var user = MouseHuntAlerter.getUserObject(xhr.responseText);
-                if(user.next_activeturn_seconds <= 0) {
-                    MouseHuntAlerter.showNotification('sound_hunter_horn');
-                    delay = user.activeturn_wait_seconds * 1000;
+                if(user.is_online) {
+                    if(user.next_activeturn_seconds <= 0) {
+                        if(user.has_puzzle === false) {
+                            if(user.bait_quantity > 0) {
+                                MouseHuntAlerter.showNotification('sound_hunter_horn');
+                            } else {
+                                MouseHuntAlerter.showError(OUT_OF_BAIT);
+                            }
+                        } else {
+                            MouseHuntAlerter.showNotification('kings_reward');
+                        }
+                        delay = user.activeturn_wait_seconds * 1000;
+                    } else {
+                        delay = user.next_activeturn_seconds * 1000;
+                    }
                 } else {
-                    delay = user.next_activeturn_seconds * 1000;
+                    MouseHuntAlerter.showError(MUST_LOG_IN);
                 }
             } else {
                 MouseHuntAlerter.showError(WRONG_PAGE_ERROR);
